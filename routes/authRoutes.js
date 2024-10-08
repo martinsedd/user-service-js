@@ -4,6 +4,8 @@ const User = require("../models/User");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const { check, validationResult } = require("express-validator");
+const rateLimit = require("express-rate-limit");
 
 // @route   POST /api/auth/register
 // @desc    Register a new user
@@ -15,10 +17,30 @@ router.post("/register", registerUser);
 // @access  Public
 router.post("/login", loginUser);
 
+const resetRequestLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 5,
+  message:
+    "Too many password reset requests from this IP, please try again after 10 minutes",
+});
+
+const resetRequestMiddlewares = [
+  resetRequestLimiter,
+  check("email", "Please provide a valid email").isEmail(),
+];
+
 // @route POST /api/auth/request-reset
 // @desc Request password reset
 // @access Public
-router.post("/request-reset", async (req, res) => {
+router.post("/request-reset", resetRequestMiddlewares, async (req, res) => {
+  const clientIP = req.ip;
+  console.log(`Password reset requested from IP: ${clientIP}`);
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array() });
+  }
+
   const { email } = req.body;
 
   try {
@@ -68,10 +90,35 @@ const sendResetEmail = async (email, resetUrl) => {
   await transporter.sendMail(mailOptions);
 };
 
+const resetPasswordLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000,
+  max: 3,
+  message:
+    "Too many password reset requests from this IP, please try again after 10 minutes",
+});
+
+const resetPasswordMiddlewares = [
+  resetPasswordLimiter,
+  check(
+    "password",
+    "Password must be at least 8 characters long and contain a number"
+  )
+    .isLength({ min: 8 })
+    .matches(/\d/),
+];
+
 // @route PUT /api/auth/reset-password
 // @desc Reset user password
 // @access Public
-router.put("/reset-password", async (req, res) => {
+router.put("/reset-password", resetPasswordMiddlewares, async (req, res) => {
+  const clientIP = req.ip;
+  console.log(`Password reset requested from IP: ${clientIP}`);
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ message: errors.array() });
+  }
+
   console.log("Query received: ", req.query);
 
   const { token } = req.query;
@@ -93,17 +140,40 @@ router.put("/reset-password", async (req, res) => {
     });
     console.log("User found: ", user);
 
+    if (user.lockUntil && user.lockUntil > Date.now()) {
+      return res
+        .status(400)
+        .json({ message: "Account locked due to too many failed attempts" });
+    }
+
     if (!user || user.resetPasswordExpire < Date.now()) {
+      user.failedResetAttempts += 1;
+
+      if (user.failedResetAttempts >= 3) {
+        user.lockUntil = Date.now() + 30 * 60 * 1000;
+        await user.save();
+        return res
+          .status(400)
+          .json({
+            message: "Too many failed attempts. Account locked for 30 minutes",
+          });
+      }
+
+      await user.save();
       return res.status(400).json({ message: "Invalid or expired token" });
     }
 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpire = undefined;
     user.password = password;
+    user.failedResetAttempts = 0;
+    user.lockUntil = undefined;
+
     await user.save();
 
     res.status(200).json({ message: "Password successfully updated" });
   } catch (err) {
+    console.error("Error in resetPassword: ", err);
     res.status(500).json({ message: "Server error", error: err });
   }
 });
