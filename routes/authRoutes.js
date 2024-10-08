@@ -152,11 +152,9 @@ router.put("/reset-password", resetPasswordMiddlewares, async (req, res) => {
       if (user.failedResetAttempts >= 3) {
         user.lockUntil = Date.now() + 30 * 60 * 1000;
         await user.save();
-        return res
-          .status(400)
-          .json({
-            message: "Too many failed attempts. Account locked for 30 minutes",
-          });
+        return res.status(400).json({
+          message: "Too many failed attempts. Account locked for 30 minutes",
+        });
       }
 
       await user.save();
@@ -174,7 +172,7 @@ router.put("/reset-password", resetPasswordMiddlewares, async (req, res) => {
     res.status(200).json({ message: "Password successfully updated" });
   } catch (err) {
     console.error("Error in resetPassword: ", err);
-    res.status(500).json({ message: "Server error", error: err });
+    res.status(400).json({ message: "Invalid or expired token" });
   }
 });
 
