@@ -16,7 +16,7 @@ connectDB();
 app.use(morgan("dev"));
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(express.urlencoded({ extended: true }));
 //////////////////////////// Routes ////////////////////////////
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
