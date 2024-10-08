@@ -1,0 +1,25 @@
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | > user-microservice@1.0.0 start
+user-microservice-js-user-service-1  | > node app.js
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | /usr/src/app/node_modules/express/lib/router/route.js:216
+user-microservice-js-user-service-1  |         throw new Error(msg);
+user-microservice-js-user-service-1  |         ^
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | Error: Route.post() requires a callback function but got a [object Object]
+user-microservice-js-user-service-1  |     at Route.<computed> [as post] (/usr/src/app/node_modules/express/lib/router/route.js:216:15)
+user-microservice-js-user-service-1  |     at proto.<computed> [as post] (/usr/src/app/node_modules/express/lib/router/index.js:521:19)
+user-microservice-js-user-service-1  |     at Object.<anonymous> (/usr/src/app/routes/userRoutes.js:78:8)
+user-microservice-js-user-service-1  |     at Module._compile (node:internal/modules/cjs/loader:1364:14)
+user-microservice-js-user-service-1  |     at Module._extensions..js (node:internal/modules/cjs/loader:1422:10)
+user-microservice-js-user-service-1  |     at Module.load (node:internal/modules/cjs/loader:1203:32)
+user-microservice-js-user-service-1  |     at Module._load (node:internal/modules/cjs/loader:1019:12)
+user-microservice-js-user-service-1  |     at Module.require (node:internal/modules/cjs/loader:1231:19)
+user-microservice-js-user-service-1  |     at require (node:internal/modules/helpers:177:18)
+user-microservice-js-user-service-1  |     at Object.<anonymous> (/usr/src/app/app.js:6:20)
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | 
+user-microservice-js-user-service-1  | Node.js v18.20.4

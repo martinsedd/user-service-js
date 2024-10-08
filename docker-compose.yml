@@ -1,0 +1,19 @@
+version: "3"
+services:
+  user-service:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/user-service
+      - JWT_SECRET=9a06c4f71e42b46e9335afedf6a7d6abb30cbb15474c330400d20b67f8031f2b
+    depends_on:
+      - mongo
+    volumes:
+      - /media/martinsedd/Bridge/Projects/volumes
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - /media/martinsedd/Bridge/Projects/mongo_volumes:/data/db
